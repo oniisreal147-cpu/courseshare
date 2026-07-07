@@ -71,15 +71,46 @@ body {
 <footer>
   <p>&copy; 2026 CourseShare. Built by a student, for students.</p>
 </footer>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyADzWe2FDl-Q9A-3TimuywbDI9B-_xKlhw",
+    authDomain: "courseshare-b36f4.firebaseapp.com",
+    projectId: "courseshare-b36f4",
+    storageBucket: "courseshare-b36f4.firebasestorage.app",
+    messagingSenderId: "46693069783",
+    appId: "1:46693069783:web:bc2db2a91b6095c3909192"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window.db = db;
+  window.firestoreCollection = collection;
+  window.firestoreAddDoc = addDoc;
+</script>
 <script>
-document.getElementById("noteForm").addEventListener("submit", function(event) {
+document.getElementById("noteForm").addEventListener("submit", async function(event) {
   event.preventDefault();
   const course = document.getElementById("courseName").value;
- const fileInput = document.getElementById("courseFile");
-const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : "no file";
-document.getElementById("confirmMessage").textContent = "Thanks! Your note for " + course + " was submitted (file: " + fileName + ").";
-  document.getElementById("noteForm").reset();
+  const note = document.getElementById("noteText").value;
+  const fileInput = document.getElementById("courseFile");
+  const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : "no file";
+
+  try {
+    await window.firestoreAddDoc(window.firestoreCollection(window.db, "courseNotes"), {
+      course: course,
+      note: note,
+      fileName: fileName,
+      timestamp: new Date()
+    });
+    document.getElementById("confirmMessage").textContent = "Thanks! Your note for " + course + " was saved.";
+    document.getElementById("noteForm").reset();
+  } catch (error) {
+    document.getElementById("confirmMessage").textContent = "Oops, something went wrong: " + error.message;
+  }
 });
 </script>
-    </body>
+</body>
 </html>
